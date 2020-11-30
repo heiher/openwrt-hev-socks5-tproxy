@@ -1,0 +1,25 @@
+#!/bin/sh /etc/rc.common
+
+START=90
+
+USE_PROCD=1
+#PROCD_DEBUG=1
+
+start_tproxy() {
+	local enable
+	config_get_bool enable $1 enable
+	[ "$enable" = 1 ] || return 0
+
+	procd_open_instance
+	procd_set_param respawn
+	procd_set_param stderr 1
+	procd_set_param limits nofile="65535 65535"
+	procd_set_param command /usr/bin/hs5t
+	procd_append_param command /etc/hs5t.yml
+	procd_close_instance
+}
+
+start_service() {
+	config_load hs5t
+	config_foreach start_tproxy hs5t
+}
